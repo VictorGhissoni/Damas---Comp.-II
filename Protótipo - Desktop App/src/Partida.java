@@ -1,14 +1,17 @@
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.Scanner;
 
 public class Partida{
     public static ArrayList<Casa> tabuleiro;
     public static ArrayList<Jogador> jogadores;
-    private Jogador jogador_ativo;
-    private Jogador segundo_jogador;
+    private static Jogador jogador_ativo;
+    private static Jogador segundo_jogador;
+    // private int modo;
 
-    public Partida(Jogador jogador1, Jogador jogador2){
+    public Partida(Jogador jogador1, Jogador jogador2/*, int modo 0 para JxJ, 1 Para JxM(f), 2 Para JxM(D)*/){
         tabuleiro = new ArrayList<>();
+        // this.modo = modo;
         for(int i=0;i<8;++i){
             for(int j=0;j<8;++j){
                 tabuleiro.add(i, new Casa(i, j));
@@ -89,15 +92,16 @@ public class Partida{
                     getCasa(pedra.casa.lin, pedra.casa.col).setPedra(null);
                 }
             }
+            //torna a peça dama, caso aplicável
         }
     }
 
-    protected Boolean movimentoPermitido(Movimento movimento){
+    protected static Boolean movimentoPermitido(Movimento movimento){
         //[[PedraPlayer], [MovLegal], [CasasValidas]]
         Boolean[] condic = new Boolean[3];
 
         //condic 1
-        if(this.jogador_ativo.lista_pedras.contains(movimento.pedra_movida)){
+        if(jogador_ativo.lista_pedras.contains(movimento.pedra_movida)){
             //System.out.println("Pedra do jogador: " + jogador_ativo.cor);
             condic[0] = true;
         } else condic[0] = false;
@@ -124,29 +128,118 @@ public class Partida{
         return (cont == condic.length) ? true : false;
     }
 
-    protected void jogar(){
+    protected void jogar() {
         Scanner sc = new Scanner(System.in);
+        // if (modo == 0) {
+            while (!fimPartida()) {
+                String cor_ativa = this.jogador_ativo.cor == 0 ? "brancas" : "pretas";
+                System.out.println("Jogador " + cor_ativa + " joga.");
+                System.out.println("Pedra a ser movida: ");
+                Integer[] pedra_movida = new Integer[]{sc.nextInt(), sc.nextInt()};
+                //System.out.println(pedra_movida[0] + " " + pedra_movida[1]);
+                System.out.println("Casa alvo: ");
+                Integer[] casa_destino = new Integer[]{sc.nextInt(), sc.nextInt()};
+                Movimento jogada_ativa = new Movimento(pedra_movida, casa_destino);
+                if (!movimentoPermitido(jogada_ativa)) {
+                    System.out.println("Movimento inválido");
+                    continue;
+                }
+                executaMovimento(jogada_ativa);
+                printTabuleiro();
 
-        while(!fimPartida()){
-            String cor_ativa = this.jogador_ativo.cor == 0 ? "brancas" : "pretas";
-            System.out.println("Jogador " + cor_ativa + " joga.");
-            System.out.println("Pedra a ser movida: ");
-            Integer[] pedra_movida = new Integer[] {sc.nextInt(), sc.nextInt()};
-            //System.out.println(pedra_movida[0] + " " + pedra_movida[1]);
-            System.out.println("Casa alvo: ");
-            Integer[] casa_destino = new Integer[] {sc.nextInt(), sc.nextInt()};
-            Movimento jogada_ativa = new Movimento(pedra_movida, casa_destino);
-            if(!movimentoPermitido(jogada_ativa)){
-                System.out.println("Movimento inválido");
-                continue;
-            } executaMovimento(jogada_ativa);
-            printTabuleiro();
+                //terminar a implementação do método
+                System.out.println("Jogada: ");
+                trocaTurno();
+            }
+        }/* else if (this.modo == 1) {
+            while (!fimPartida()) {
+                String cor_ativa = this.jogador_ativo.cor == 0 ? "brancas" : "pretas";
+                System.out.println("Jogador " + cor_ativa + " joga.");
+                System.out.println("Pedra a ser movida: ");
+                Integer[] pedra_movida = new Integer[]{sc.nextInt(), sc.nextInt()};
+                //System.out.println(pedra_movida[0] + " " + pedra_movida[1]);
+                System.out.println("Casa alvo: ");
+                Integer[] casa_destino = new Integer[]{sc.nextInt(), sc.nextInt()};
+                Movimento jogada_ativa = new Movimento(pedra_movida, casa_destino);
+                if (!movimentoPermitido(jogada_ativa)) {
+                    System.out.println("Movimento inválido");
+                    continue;
+                }
+                executaMovimento(jogada_ativa);
+                printTabuleiro();
 
-            //terminar a implementação do método
-            System.out.println("Jogada: ");
-            trocaTurno();
+                //terminar a implementação do método
+                System.out.println("Jogada: ");
+                trocaTurno();
+
+                executaMovimento(EscolheAleatorio(ListaPossíveis(this.jogador_ativo, this.segundo_jogador)));
+                printTabuleiro();
+                ;
+
+                System.out.println("Jogada: ");
+                trocaTurno();
+            }
+        } else if (this.modo == 2){
+            while (!fimPartida()) {
+                String cor_ativa = this.jogador_ativo.cor == 0 ? "brancas" : "pretas";
+                System.out.println("Jogador " + cor_ativa + " joga.");
+                System.out.println("Pedra a ser movida: ");
+                Integer[] pedra_movida = new Integer[]{sc.nextInt(), sc.nextInt()};
+                //System.out.println(pedra_movida[0] + " " + pedra_movida[1]);
+                System.out.println("Casa alvo: ");
+                Integer[] casa_destino = new Integer[]{sc.nextInt(), sc.nextInt()};
+                Movimento jogada_ativa = new Movimento(pedra_movida, casa_destino);
+                if (!movimentoPermitido(jogada_ativa)) {
+                    System.out.println("Movimento inválido");
+                    continue;
+                }
+                executaMovimento(jogada_ativa);
+                printTabuleiro();
+
+                //terminar a implementação do método
+                System.out.println("Jogada: ");
+                trocaTurno();
+
+            }
         }
+    }*/
+
+    protected ArrayList<Movimento> ListaPossíveis (Jogador atual, Jogador inimigo){
+        ArrayList<Movimento> MovimentosPossiveis = new ArrayList<Movimento>();
+        for (Casa Orig : Partida.tabuleiro)
+            {
+            Integer[] CoordOrig = new Integer[2];
+            CoordOrig[0] = Orig.lin;
+            CoordOrig[1] = Orig.col;
+            for (Casa Dest : Partida.tabuleiro) {
+                Integer[] CoordDest = new Integer[2];
+                CoordDest[0] = Dest.lin;
+                CoordDest[1] = Dest.col;
+                Movimento Checado = new Movimento(CoordOrig, CoordDest);
+                if (Partida.movimentoPermitido(Checado)) {
+                    MovimentosPossiveis.add(Checado);
+                }
+            }
+        }return MovimentosPossiveis;
     }
+
+    public Movimento EscolheAleatorio (ArrayList<Movimento> Lista){// dificuldade fácil
+        Random mov = new Random();
+        return Lista.get(mov.nextInt(Lista.size()));
+    }
+
+    /* protected Movimento DificuldadeDificil (ArrayList<Movimento> Lista){
+        ArrayList<Movimento> Inimigo = new ArrayList<>();
+        for (Movimento mov : ListaPossíveis(this.segundo_jogador, this.jogador_ativo)){
+            Inimigo.add(mov);
+        }
+        for (Movimento mov : Inimigo){
+            for (Pedra pedra : mov.pedras_capturadas){
+                if ()
+            }
+        }
+        return ;
+    } */
 
     protected void trocaTurno(){
         Jogador j1 = jogador_ativo;
